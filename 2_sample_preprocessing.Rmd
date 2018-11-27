@@ -1,0 +1,52 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    keep_md: yes
+---
+
+The in this example is available at https://pubs.broadinstitute.org/diabimmune/combined-data/
+
+You can hide irrelevant code blocks, such as loading libraries, by adding "include=FALSE" in header
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(openxlsx)
+library(microbiomics)
+```
+
+```{r} 
+sample_metadata <- read.xlsx("data/diabimmune_combined_metadata.xlsx", sheet = 2)
+head(sample_metadata)
+
+```
+
+This data contains microbiome samples from young childre during first three years of life. Now let's say we wanted to do an analysis with only a subset of samples; samples during the first year of life. Second filter command will only include samples where metagenomic data is available (i.e. sampleID is not <NA>)
+
+```{r filtering, warning=FALSE}
+ggplot(sample_metadata, aes(x=age_at_collection)) + 
+  geom_histogram() + 
+  xlab("Age at collection (days)") +
+  theme_bw()
+
+metadata_first_year_metagenomes <-
+  sample_metadata %>%
+  filter(age_at_collection < 365) %>%
+  filter(!(is.na(gid_wgs)))
+head(metadata_first_year_metagenomes)
+nrow(metadata_first_year_metagenomes)
+```
+
+Now, proceed with reading the microbiome profiles from the "master" file and check that all samples are included...
+
+```{r load-microbiome-data}
+metaphlan_data <- read_metaphlan_table("data/diabimmune_metaphlan_table.txt")
+all(metadata_first_year_metagenomes$gid_wgs %in% rownames(metaphlan_data))
+```
+.. and then filter down to the desired samples.
+```{r filter-microbiome-data}
+metaphlan_data_first_year <-
+  metaphlan_data[ metadata_first_year_metagenomes$gid_wgs , ]
+nrow(metaphlan_data_first_year)
+```
+Now we are ready to conduct any analysis using this subset of samples without generating any additional files. The filtering process down to this point is highly reprducible and explained in this document.
