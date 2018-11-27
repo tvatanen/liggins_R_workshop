@@ -5,7 +5,7 @@ output:
     keep_md: yes
 ---
 
-The in this example is available at https://pubs.broadinstitute.org/diabimmune/combined-data/
+Example script in data preprocessing; prepare a subset of microbiome samples for downstream analysis without generating additional files. The data used in this example is publicly available at https://pubs.broadinstitute.org/diabimmune/combined-data/
 
 You can hide irrelevant code blocks, such as loading libraries, by adding "include=FALSE" in header
 
@@ -27,7 +27,7 @@ head(sample_metadata)
 ## 6   E000823     FIN  3108596              1064    abx  G80124  G74454
 ```
 
-This data contains microbiome samples from young childre during first three years of life. Now let's say we wanted to do an analysis with only a subset of samples; samples during the first year of life. Second filter command will only include samples where metagenomic data is available (i.e. sampleID is not <NA>)
+This data contains microbiome samples from young children during first three years of life. Now let's say we wanted to do an analysis with only a subset of samples; samples during the first year of life. Second filter command below will only include samples where metagenomic data is available (i.e. sampleID is not `<NA>`)
 
 
 ```r
