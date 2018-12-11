@@ -89,23 +89,29 @@ Let's first compare beta diversities between responders and non-responders
 ```{r}
 ggplot(beta_diversities_per_subject, aes(y=beta_div, x=response_bin)) +
          geom_boxplot() +
-         geom_point()
+         geom_point() +
+         theme_bw() +
+         xlab("") +
+         ylab("Beta-diversity")
 
 t.test(beta_div ~ response_bin, data=beta_diversities_per_subject)
 ```
 The difference looks large but is not statistically significant.
 
-Let's then compare beta-diversities to the shift (delta) in alpha-diversity
+Let's then compare beta-diversities to the absolute shift (delta) in alpha-diversity
 ```{r}
 beta_diversities_per_subject_delta_alpha <- 
   beta_diversities_per_subject %>%
-  mutate(delta_alpha_diversity = diversity_sample2 - diversity_sample1) 
+  mutate(delta_alpha_diversity = abs(diversity_sample2 - diversity_sample1))
 
 ggplot(beta_diversities_per_subject_delta_alpha, aes(x=delta_alpha_diversity, beta_div)) + 
   geom_point() + 
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  xlab("Delta alpha-diversity") +
+  ylab("Beta-diversity")
 
 cor.test(beta_diversities_per_subject_delta_alpha$delta_alpha_diversity,
          beta_diversities_per_subject_delta_alpha$beta_div)
 ```
-Positive correlation is not statistically significant.
+Positive correlation is statistically significant, p = 0.0015. Is this really surprising though? If there is a large shift in alpha-diversity, you'd expect large beta-diversity as well (i.e. these two measures are connected). 

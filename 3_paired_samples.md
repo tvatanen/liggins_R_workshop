@@ -9,7 +9,7 @@ output:
 
 
 
-The data in this example was generated in fecal microbial transplantation (FMT) study in Crohn's Disease patients. Patients were further divided into responders and non-responders, and their microbiome was characterized by metagenomic sequencing at baseline (before FMT) and at three time points afterwards. The reference is given below:
+The data in this example was generated in fecal microbial transplantation (FMT) study in Crohn's Disease patients. Patients were further divided into responders and non-responders, and their microbiome was characterized by metagenomic sequencing at baseline (before FMT) and at three time points afterwards. The results and data were published in the reference below:
 
 > BP Vaughn, T Vatanen, JR Allegretti, A Bai, RJ Xavier, J Korzenik, D Gevers, A Ting, SC Robson, AC Moss. Increased Intestinal Microbial Diversity following Fecal Microbiota Transplant for Active Crohn's Disease. Inflammatory Bowel Diseases, 22 (9), 2016.
 
@@ -177,7 +177,10 @@ Let's first compare beta diversities between responders and non-responders
 ```r
 ggplot(beta_diversities_per_subject, aes(y=beta_div, x=response_bin)) +
          geom_boxplot() +
-         geom_point()
+         geom_point() +
+         theme_bw() +
+         xlab("") +
+         ylab("Beta-diversity")
 ```
 
 ![](3_paired_samples_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
@@ -201,16 +204,19 @@ t.test(beta_div ~ response_bin, data=beta_diversities_per_subject)
 ```
 The difference looks large but is not statistically significant.
 
-Let's then compare beta-diversities to the shift (delta) in alpha-diversity
+Let's then compare beta-diversities to the absolute shift (delta) in alpha-diversity
 
 ```r
 beta_diversities_per_subject_delta_alpha <- 
   beta_diversities_per_subject %>%
-  mutate(delta_alpha_diversity = diversity_sample2 - diversity_sample1) 
+  mutate(delta_alpha_diversity = abs(diversity_sample2 - diversity_sample1))
 
 ggplot(beta_diversities_per_subject_delta_alpha, aes(x=delta_alpha_diversity, beta_div)) + 
   geom_point() + 
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  xlab("Delta alpha-diversity") +
+  ylab("Beta-diversity")
 ```
 
 ![](3_paired_samples_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
@@ -225,12 +231,12 @@ cor.test(beta_diversities_per_subject_delta_alpha$delta_alpha_diversity,
 ## 	Pearson's product-moment correlation
 ## 
 ## data:  beta_diversities_per_subject_delta_alpha$delta_alpha_diversity and beta_diversities_per_subject_delta_alpha$beta_div
-## t = 1.3621, df = 13, p-value = 0.1963
+## t = 4.0047, df = 13, p-value = 0.001499
 ## alternative hypothesis: true correlation is not equal to 0
 ## 95 percent confidence interval:
-##  -0.1939723  0.7329741
+##  0.3728569 0.9092750
 ## sample estimates:
 ##       cor 
-## 0.3534068
+## 0.7431731
 ```
-Positive correlation is not statistically significant.
+Positive correlation is statistically significant. Is this really surprising though? If there is a large shift in alpha-diversity, you'd expect large beta-diversity as well (i.e. these two measures are connected). 
