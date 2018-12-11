@@ -1,0 +1,111 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    keep_md: yes
+---
+
+# 3. Paired sample analysis example
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(microbiomics)
+library(vegan)
+```
+
+The data in this example was generated in fecal microbial transplantation (FMT) study in Crohn's Disease patients. Patients were further divided into responders and non-responders, and their microbiome was characterized by metagenomic sequencing at baseline (before FMT) and at three time points afterwards. The results and data were published in the reference below:
+
+> BP Vaughn, T Vatanen, JR Allegretti, A Bai, RJ Xavier, J Korzenik, D Gevers, A Ting, SC Robson, AC Moss. Increased Intestinal Microbial Diversity following Fecal Microbiota Transplant for Active Crohn's Disease. Inflammatory Bowel Diseases, 22 (9), 2016.
+
+Load and inspect data from Crohn's Disease FMT study
+
+```{r} 
+load("data/BIDMC-metadata.RData")
+ls()
+head(map_bidmc)
+dim(map_bidmc)
+map_bidmc_simple <-
+  map_bidmc %>%
+  rename(sampleID = Project) %>%
+  filter(donor_recipient == "recipient",
+         time %in% c(1,2)) %>%
+  select(sampleID, time, subject, response_bin, diversity1) 
+head(map_bidmc_simple)
+
+metaphlan_data <- read_metaphlan_table("data/BIDMC-FMT_metaphlan.txt")
+dim(metaphlan_data)
+rownames(metaphlan_data) %in% map_bidmc_simple$sampleID
+```
+Remove MetaPhlAn profiles that are not included in the metadata table:
+```{r}
+metaphlan_data_filtered <- metaphlan_data[ rownames(metaphlan_data) %in% map_bidmc_simple$sampleID , ]
+```
+Compute beta diversities:
+```{r}
+beta_diversities <- vegdist(metaphlan_data, 
+                            method = "bray")
+dim(beta_diversities)
+as.matrix(beta_diversities)[1:5,1:5]
+```
+Now we process the beta-diversity matrix to select the desired beta-diversities; only within-subject comparisons of baseline vs. time point 2:
+```{r}
+beta_diversities_long <- 
+  as.matrix(beta_diversities) %>%
+  as.data.frame() %>%
+  rownames_to_column("Sample1") %>%
+  gather(Sample2, beta_div, -Sample1) %>%
+  mutate(ID = apply(cbind(as.character(Sample1), as.character(Sample2)), 1, function(x) {str_c(sort(x), collapse = ":")})) %>%
+  distinct(ID, .keep_all = T) %>%
+  filter(!(Sample1 == Sample2))
+```
+The process line by line:
+
+* Transforn dist-object to numerical matrix
+* Transform numberical matrix to data frame (required for downstream processing)
+* Move row names to column (Sample1)
+* Transform to long format (gather) while keeping column `Sample1`
+* Create a new column `ID` to remove duplicate entries where the sample order is reversed. `ID` has the sample IDs in alphanumeric order and allows removing duplicate entries
+* Remove rows where `ID` is duplicated (while keeping other columns)
+
+Next we combine with subject metadata (subject ID), and remove comparisons accross subjects
+```{r}
+beta_diversities_per_subject <- 
+  beta_diversities_long %>%
+  right_join(map_bidmc_simple %>%
+              rename(Sample1 = sampleID,
+                     time_sample1 = time,
+                     subject_sample1 = subject,
+                     diversity_sample1 = diversity1)) %>%
+  right_join(map_bidmc_simple %>%
+              rename(Sample2 = sampleID,
+                     time_sample2 = time,
+                     subject_sample2 = subject,
+                     diversity_sample2 = diversity1)) %>%
+  filter(subject_sample1 == subject_sample2)
+```
+We need to combine with metadata twice to include annotations for both samples on each row.
+
+Let's first compare beta diversities between responders and non-responders
+```{r}
+ggplot(beta_diversities_per_subject, aes(y=beta_div, x=response_bin)) +
+         geom_boxplot() +
+         geom_point()
+
+t.test(beta_div ~ response_bin, data=beta_diversities_per_subject)
+```
+The difference looks large but is not statistically significant.
+
+Let's then compare beta-diversities to the shift (delta) in alpha-diversity
+```{r}
+beta_diversities_per_subject_delta_alpha <- 
+  beta_diversities_per_subject %>%
+  mutate(delta_alpha_diversity = diversity_sample2 - diversity_sample1) 
+
+ggplot(beta_diversities_per_subject_delta_alpha, aes(x=delta_alpha_diversity, beta_div)) + 
+  geom_point() + 
+  geom_smooth(method = "lm")
+
+cor.test(beta_diversities_per_subject_delta_alpha$delta_alpha_diversity,
+         beta_diversities_per_subject_delta_alpha$beta_div)
+```
+Positive correlation is not statistically significant.
