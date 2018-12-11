@@ -239,4 +239,4 @@ cor.test(beta_diversities_per_subject_delta_alpha$delta_alpha_diversity,
 ##       cor 
 ## 0.7431731
 ```
-Positive correlation is statistically significant. Is this really surprising though? If there is a large shift in alpha-diversity, you'd expect large beta-diversity as well (i.e. these two measures are connected). 
+Positive correlation is statistically significant, p = 0.0015. Is this really surprising though? If there is a large shift in alpha-diversity, you'd expect large beta-diversity as well (i.e. these two measures are connected). 

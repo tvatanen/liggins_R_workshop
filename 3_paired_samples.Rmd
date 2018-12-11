@@ -57,6 +57,7 @@ beta_diversities_long <-
   mutate(ID = apply(cbind(as.character(Sample1), as.character(Sample2)), 1, function(x) {str_c(sort(x), collapse = ":")})) %>%
   distinct(ID, .keep_all = T) %>%
   filter(!(Sample1 == Sample2))
+
 ```
 The process line by line:
 
