@@ -5,6 +5,8 @@ output:
     keep_md: yes
 ---
 
+# 2. Sample preprocessing example
+
 Example script in deata preprocessing; prepare a subset of microbiome samples for downstream analysis without generating additional files. The data used in this example is publicly available at https://pubs.broadinstitute.org/diabimmune/combined-data/
 
 You can hide irrelevant code blocks, such as loading libraries, by adding "include=FALSE" in header

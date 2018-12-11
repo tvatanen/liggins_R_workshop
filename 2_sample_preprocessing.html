@@ -122,7 +122,9 @@ $(document).ready(function () {
 </div>
 
 
-<p>Example script in data preprocessing; prepare a subset of microbiome samples for downstream analysis without generating additional files. The data used in this example is publicly available at <a href="https://pubs.broadinstitute.org/diabimmune/combined-data/" class="uri">https://pubs.broadinstitute.org/diabimmune/combined-data/</a></p>
+<div id="sample-preprocessing-example" class="section level1">
+<h1>2. Sample preprocessing example</h1>
+<p>Example script in deata preprocessing; prepare a subset of microbiome samples for downstream analysis without generating additional files. The data used in this example is publicly available at <a href="https://pubs.broadinstitute.org/diabimmune/combined-data/" class="uri">https://pubs.broadinstitute.org/diabimmune/combined-data/</a></p>
 <p>You can hide irrelevant code blocks, such as loading libraries, by adding “include=FALSE” in header</p>
 <pre class="r"><code>sample_metadata &lt;- read.xlsx(&quot;data/diabimmune_combined_metadata.xlsx&quot;, sheet = 2)
 head(sample_metadata)</code></pre>
@@ -133,7 +135,7 @@ head(sample_metadata)</code></pre>
 ## 4   E000823     FIN  3106240               511    abx    &lt;NA&gt;  G74306
 ## 5   E000823     FIN  3000042               151    abx    &lt;NA&gt;  G69730
 ## 6   E000823     FIN  3108596              1064    abx  G80124  G74454</code></pre>
-<p>This data contains microbiome samples from young children during first three years of life. Now let’s say we wanted to do an analysis with only a subset of samples; samples during the first year of life. Second filter command below will only include samples where metagenomic data is available (i.e. sampleID is not <code>&lt;NA&gt;</code>)</p>
+<p>This data contains microbiome samples from young children during first three years of life. Now let’s say we wanted to do an analysis with only a subset of samples; samples during the first year of life. Second filter command below will only include samples where metagenomic data is available (i.e. sampleID is not `<NA>)</p>
 <pre class="r"><code>ggplot(sample_metadata, aes(x=age_at_collection)) + 
   geom_histogram() + 
   xlab(&quot;Age at collection (days)&quot;) +
@@ -164,6 +166,7 @@ all(metadata_first_year_metagenomes$gid_wgs %in% rownames(metaphlan_data))</code
 nrow(metaphlan_data_first_year)</code></pre>
 <pre><code>## [1] 427</code></pre>
 <p>Now we are ready to conduct any analysis using this subset of samples without generating any additional files. The filtering process down to this point is highly reprducible and explained in this document.</p>
+</div>
 
 
 
